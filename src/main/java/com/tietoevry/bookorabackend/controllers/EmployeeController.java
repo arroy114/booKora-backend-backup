@@ -1,14 +1,13 @@
 package com.tietoevry.bookorabackend.controllers;
 
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeDTO;
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeListDTO;
-import com.tietoevry.bookorabackend.api.v1.model.MessageDTO;
-import com.tietoevry.bookorabackend.api.v1.model.SignUpDTO;
+import com.tietoevry.bookorabackend.api.v1.model.*;
 import com.tietoevry.bookorabackend.services.ConfirmationTokenService;
 import com.tietoevry.bookorabackend.services.EmployeeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @Tag(name = "Employee", description = "Employee API")
 @RestController
@@ -42,6 +41,13 @@ public class EmployeeController {
     public MessageDTO createNewEmployee(@RequestBody SignUpDTO signUpDTO){
         return employeeService.createNewEmployee(signUpDTO);
     }
+
+    @PostMapping("/signin")
+    @ResponseStatus(HttpStatus.OK)
+    public JwtDTO authenticateUser(@Valid @RequestBody LogInDTO logInDTO) {
+        return employeeService.logIn(logInDTO);
+    }
+
 
     @PutMapping({"/{id}"})
     @ResponseStatus(HttpStatus.OK)

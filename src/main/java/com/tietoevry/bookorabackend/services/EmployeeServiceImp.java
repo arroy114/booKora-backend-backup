@@ -2,10 +2,7 @@ package com.tietoevry.bookorabackend.services;
 
 import com.tietoevry.bookorabackend.api.v1.mapper.EmployeeMapper;
 import com.tietoevry.bookorabackend.api.v1.mapper.SignUpMapper;
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeDTO;
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeListDTO;
-import com.tietoevry.bookorabackend.api.v1.model.MessageDTO;
-import com.tietoevry.bookorabackend.api.v1.model.SignUpDTO;
+import com.tietoevry.bookorabackend.api.v1.model.*;
 import com.tietoevry.bookorabackend.controllers.EmployeeController;
 import com.tietoevry.bookorabackend.model.ConfirmationToken;
 import com.tietoevry.bookorabackend.model.Employee;
@@ -15,7 +12,12 @@ import com.tietoevry.bookorabackend.repositories.ConfirmationTokenRepository;
 import com.tietoevry.bookorabackend.repositories.EmployeeRepository;
 import com.tietoevry.bookorabackend.repositories.RoleRepository;
 import com.tietoevry.bookorabackend.security.jwt.JwtUtils;
+import com.tietoevry.bookorabackend.security.services.UserDetailsImpl;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 @Service
 public class EmployeeServiceImp implements EmployeeService {
 
+    private final AuthenticationManager authenticationManager;
     private final EmployeeMapper employeeMapper;
     private final SignUpMapper signUpMapper;
     private final PasswordEncoder encoder;
@@ -36,7 +39,8 @@ public class EmployeeServiceImp implements EmployeeService {
     private final RoleRepository roleRepository;
     private final ConfirmationTokenRepository confirmationTokenRepository;
 
-    public EmployeeServiceImp(EmployeeMapper employeeMapper, SignUpMapper signUpMapper, PasswordEncoder encoder, JwtUtils jwtUtils, EmployeeRepository employeeRepository, EmailSenderService emailSenderService, RoleRepository roleRepository, ConfirmationTokenRepository confirmationTokenRepository) {
+    public EmployeeServiceImp(AuthenticationManager authenticationManager, EmployeeMapper employeeMapper, SignUpMapper signUpMapper, PasswordEncoder encoder, JwtUtils jwtUtils, EmployeeRepository employeeRepository, EmailSenderService emailSenderService, RoleRepository roleRepository, ConfirmationTokenRepository confirmationTokenRepository) {
+        this.authenticationManager = authenticationManager;
         this.employeeMapper = employeeMapper;
         this.signUpMapper = signUpMapper;
         this.encoder = encoder;
@@ -122,6 +126,33 @@ public class EmployeeServiceImp implements EmployeeService {
             return new MessageDTO("User registered successfully!");
         }
 
+    }
+
+    @Override
+    public JwtDTO logIn(LogInDTO logInDTO) {
+
+        //Authenticate and return an Authentication object that can be used to find user information
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(logInDTO.getEmail(), logInDTO.getPassword()));
+
+        //Update SecurityContext using Authentication object
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        //Generate JWT
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        //Get UserDetails from Authentication object
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal(); //authentication.getPrincipal() return object of org.springframework.security.core.userdetails.User
+
+        //Get roles from UserDetails
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return new JwtDTO(jwt,
+                userDetails.getId(),
+                userDetails.getEmail(),
+                roles);
     }
 
     @Override

@@ -1,9 +1,6 @@
 package com.tietoevry.bookorabackend.services;
 
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeDTO;
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeListDTO;
-import com.tietoevry.bookorabackend.api.v1.model.MessageDTO;
-import com.tietoevry.bookorabackend.api.v1.model.SignUpDTO;
+import com.tietoevry.bookorabackend.api.v1.model.*;
 
 public interface EmployeeService {
     EmployeeListDTO getAllEmployees();
@@ -11,6 +8,8 @@ public interface EmployeeService {
     EmployeeDTO getEmployeeById(Long id);
 
     MessageDTO createNewEmployee(SignUpDTO signUpDTO);
+
+    JwtDTO logIn(LogInDTO logInDTO);
 
     EmployeeDTO saveEmployeeByDTO(Long id, EmployeeDTO employeeDTO);
 
