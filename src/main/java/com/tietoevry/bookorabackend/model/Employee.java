@@ -11,8 +11,8 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"admin", "confirmationToken"})
-@EqualsAndHashCode(exclude = {"admin", "confirmationToken"})
+@ToString(exclude = {"roles", "confirmationToken"})
+@EqualsAndHashCode(exclude = {"roles", "confirmationToken"})
 @Entity
 public class Employee{
 
@@ -33,11 +33,12 @@ public class Employee{
     @NotNull
     private String password;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable
+    private Set<Role> roles = new HashSet<>();
+
     @OneToMany(mappedBy = "employee")
     private Set<Booking> employeeBookings = new HashSet<>();
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "employee")
-    private Admin admin;
 
     private boolean isEnabled;
 

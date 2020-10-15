@@ -1,6 +1,5 @@
 package com.tietoevry.bookorabackend.api.v1.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,13 +7,12 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeDTO {
-
-    private long id;
+public class SignUpDTO {
 
     @NotBlank
     private String lastName;
@@ -23,15 +21,11 @@ public class EmployeeDTO {
     private String firstName;
 
     @NotBlank
-    @Size(max = 50)
-    @Email
+    @Size(max = 50) @Email
     private String email;
 
     @NotBlank @Size(min = 6, max = 40)
     private String password;
 
-    @JsonProperty("employee_url")
-    private String employeeUrl;
-
-
+    private Set<String> roles;
 }

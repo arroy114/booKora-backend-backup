@@ -2,6 +2,8 @@ package com.tietoevry.bookorabackend.controllers;
 
 import com.tietoevry.bookorabackend.api.v1.model.EmployeeDTO;
 import com.tietoevry.bookorabackend.api.v1.model.EmployeeListDTO;
+import com.tietoevry.bookorabackend.api.v1.model.MessageDTO;
+import com.tietoevry.bookorabackend.api.v1.model.SignUpDTO;
 import com.tietoevry.bookorabackend.services.ConfirmationTokenService;
 import com.tietoevry.bookorabackend.services.EmployeeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,10 +35,12 @@ public class EmployeeController {
         return employeeService.getEmployeeById(id);
     }
 
-    @PostMapping
+
+
+    @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    public EmployeeDTO createNewEmployee(@RequestBody EmployeeDTO employeeDTO){
-        return employeeService.createNewEmployee(employeeDTO);
+    public MessageDTO createNewEmployee(@RequestBody SignUpDTO signUpDTO){
+        return employeeService.createNewEmployee(signUpDTO);
     }
 
     @PutMapping({"/{id}"})

@@ -5,9 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class AdminDTO {
-
-    private Long id;
+@NoArgsConstructor
+public class MessageDTO {
+    private String message;
 }

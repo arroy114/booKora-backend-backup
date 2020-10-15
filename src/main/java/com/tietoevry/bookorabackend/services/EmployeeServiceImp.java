@@ -1,31 +1,49 @@
 package com.tietoevry.bookorabackend.services;
 
 import com.tietoevry.bookorabackend.api.v1.mapper.EmployeeMapper;
+import com.tietoevry.bookorabackend.api.v1.mapper.SignUpMapper;
 import com.tietoevry.bookorabackend.api.v1.model.EmployeeDTO;
 import com.tietoevry.bookorabackend.api.v1.model.EmployeeListDTO;
+import com.tietoevry.bookorabackend.api.v1.model.MessageDTO;
+import com.tietoevry.bookorabackend.api.v1.model.SignUpDTO;
 import com.tietoevry.bookorabackend.controllers.EmployeeController;
 import com.tietoevry.bookorabackend.model.ConfirmationToken;
 import com.tietoevry.bookorabackend.model.Employee;
+import com.tietoevry.bookorabackend.model.Role;
+import com.tietoevry.bookorabackend.model.RoleEnum;
 import com.tietoevry.bookorabackend.repositories.ConfirmationTokenRepository;
 import com.tietoevry.bookorabackend.repositories.EmployeeRepository;
+import com.tietoevry.bookorabackend.repositories.RoleRepository;
+import com.tietoevry.bookorabackend.security.jwt.JwtUtils;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class EmployeeServiceImp implements EmployeeService {
 
     private final EmployeeMapper employeeMapper;
+    private final SignUpMapper signUpMapper;
+    private final PasswordEncoder encoder;
+    private final JwtUtils jwtUtils;
     private final EmployeeRepository employeeRepository;
     private final EmailSenderService emailSenderService;
+    private final RoleRepository roleRepository;
     private final ConfirmationTokenRepository confirmationTokenRepository;
 
-    public EmployeeServiceImp(EmployeeMapper employeeMapper, EmployeeRepository employeeRepository, EmailSenderService emailSenderService, ConfirmationTokenRepository confirmationTokenRepository) {
+    public EmployeeServiceImp(EmployeeMapper employeeMapper, SignUpMapper signUpMapper, PasswordEncoder encoder, JwtUtils jwtUtils, EmployeeRepository employeeRepository, EmailSenderService emailSenderService, RoleRepository roleRepository, ConfirmationTokenRepository confirmationTokenRepository) {
         this.employeeMapper = employeeMapper;
+        this.signUpMapper = signUpMapper;
+        this.encoder = encoder;
+        this.jwtUtils = jwtUtils;
         this.employeeRepository = employeeRepository;
         this.emailSenderService = emailSenderService;
+        this.roleRepository = roleRepository;
         this.confirmationTokenRepository = confirmationTokenRepository;
     }
 
@@ -52,13 +70,41 @@ public class EmployeeServiceImp implements EmployeeService {
     }
 
     @Override
-    public EmployeeDTO createNewEmployee(EmployeeDTO employeeDTO) {
+    public MessageDTO createNewEmployee(SignUpDTO signUpDTO) {
 
-        if(existedByEmail(employeeDTO.getEmail())){
-            throw new RuntimeException("Email existed!"); //TODO make exception handler
+        if(existedByEmail(signUpDTO.getEmail())){
+            return new MessageDTO("Error: Email is already in use!");
         }
         else{
-            Employee employee = employeeMapper.employeeDTOtoEmployee(employeeDTO);
+            //Mapping signDTO to employee
+            Employee employee = signUpMapper.signUpDTOtoEmployee(signUpDTO);
+
+            //encode password
+            employee.setPassword(encoder.encode(signUpDTO.getPassword()));
+
+            //Check if the roles exist, if exist add to employee
+            Set<String> strRoles = signUpDTO.getRoles();
+            Set<Role> roles = new HashSet<>();
+            if (strRoles == null) {
+                Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                roles.add(userRole);
+            } else {
+                strRoles.forEach(role -> {
+                    if ("admin".equals(role)) {
+                        Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+                    }
+                });
+            }
+
+            //Always add employee as a user
+            Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+
+            employee.setRoles(roles);
             Employee savedEmployee = employeeRepository.save(employee);
 
             ConfirmationToken confirmationToken = new ConfirmationToken(savedEmployee);
@@ -73,10 +119,7 @@ public class EmployeeServiceImp implements EmployeeService {
 
             emailSenderService.sendEmail(mailMessage);
 
-            EmployeeDTO employeeDTOtoReturn = employeeMapper.employeeToEmployeeDTO(savedEmployee);
-            employeeDTO.setEmployeeUrl(getEmployeeUrl(savedEmployee.getId()));
-
-            return employeeDTOtoReturn;
+            return new MessageDTO("User registered successfully!");
         }
 
     }
