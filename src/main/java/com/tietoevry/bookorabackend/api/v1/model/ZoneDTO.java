@@ -12,4 +12,6 @@ public class ZoneDTO {
     private Long id ;
     private Integer floor;
     private Character zone;
+    private Boolean activated;
+    private Integer capacity;
 }

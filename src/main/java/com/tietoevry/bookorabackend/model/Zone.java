@@ -19,6 +19,8 @@ public class Zone {
 
     private Integer floor;
     private Character zone;
+    private Boolean activated;
+    private Integer capacity;
 
     @OneToMany(mappedBy = "zone")
     private Set<Booking> zoneBookings;
