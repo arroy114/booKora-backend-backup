@@ -13,6 +13,7 @@ import com.tietoevry.bookorabackend.repositories.EmployeeRepository;
 import com.tietoevry.bookorabackend.repositories.RoleRepository;
 import com.tietoevry.bookorabackend.security.jwt.JwtUtils;
 import com.tietoevry.bookorabackend.security.services.UserDetailsImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,6 +52,9 @@ public class EmployeeServiceImp implements EmployeeService {
         this.confirmationTokenRepository = confirmationTokenRepository;
     }
 
+    @Value("${validDomain}")
+    private String validDomain;
+
     @Override
     public EmployeeListDTO getAllEmployees() {
         List<EmployeeDTO> employeeDTOList = employeeRepository.findAll().stream().map(employee -> {
@@ -75,6 +79,12 @@ public class EmployeeServiceImp implements EmployeeService {
 
     @Override
     public MessageDTO createNewEmployee(SignUpDTO signUpDTO) {
+
+        //Validate domain
+        String email = signUpDTO.getEmail();
+        String domain = email.substring(email.indexOf("@") + 1);;
+        if(!domain.equals(validDomain))
+            return new MessageDTO("Error: Email domain is not valid!");
 
         if(existedByEmail(signUpDTO.getEmail())){
             return new MessageDTO("Error: Email is already in use!");
