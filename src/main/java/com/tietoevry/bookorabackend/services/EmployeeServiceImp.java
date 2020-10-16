@@ -22,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -122,6 +124,7 @@ public class EmployeeServiceImp implements EmployeeService {
             Employee savedEmployee = employeeRepository.save(employee);
 
             ConfirmationToken confirmationToken = new ConfirmationToken(savedEmployee);
+            confirmationToken.setExpiryDate(calculateExpiryDate(1)); //in unit of minute
             confirmationTokenRepository.save(confirmationToken);
 
             SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -193,5 +196,12 @@ public class EmployeeServiceImp implements EmployeeService {
         Employee employee = employeeRepository.findByEmailIgnoreCase(email);
         if (employee != null) return true;
         return false;
+    }
+
+    //Setting expiryTime in unit of minute
+    private Timestamp calculateExpiryDate(int expiryTime){
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE,expiryTime);
+        return new Timestamp(calendar.getTime().getTime());
     }
 }

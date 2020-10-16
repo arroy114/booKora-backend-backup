@@ -28,7 +28,7 @@ public class DataLoader implements CommandLineRunner{
 
     private void LoadEmployees() {
         Employee employee1 = new Employee("Per", "Peterson", "per.peterson@tietoevry.com","111");
-        Employee employee2 = new Employee("John", "Johnson", "oslomet7@gmail.com","222");
+        Employee employee2 = new Employee("John", "Johnson", "oslomet7@tietoevry.com","222");
         Employee employee3 = new Employee("Kari", "Hansen", "oslomet6@gmail.com","333");
         employeeRepository.save(employee1);
         employeeRepository.save(employee2);

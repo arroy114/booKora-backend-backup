@@ -1,6 +1,6 @@
 package com.tietoevry.bookorabackend.controllers;
 
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeDTO;
+import com.tietoevry.bookorabackend.api.v1.model.MessageDTO;
 import com.tietoevry.bookorabackend.services.ConfirmationTokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ public class ConfirmationTokenController {
 
     @GetMapping("/confirm-account")
     @ResponseStatus(HttpStatus.OK)
-    public EmployeeDTO employeeDTO(@RequestParam("token") String token){
+    public MessageDTO messageDTO(@RequestParam("token") String token){
         return confirmationTokenService.checkToken(token); //TODO not complete
     }
 }

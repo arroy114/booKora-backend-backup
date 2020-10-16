@@ -1,7 +1,7 @@
 package com.tietoevry.bookorabackend.services;
 
-import com.tietoevry.bookorabackend.api.v1.model.EmployeeDTO;
+import com.tietoevry.bookorabackend.api.v1.model.MessageDTO;
 
 public interface ConfirmationTokenService {
-    EmployeeDTO checkToken(String confirmationToken);
+    MessageDTO checkToken(String confirmationToken);
 }
